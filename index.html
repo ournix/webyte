@@ -16,13 +16,15 @@
             --dark-color: #333;
             --light-color: #f4f4f4;
             --text-gray: #666;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --shadow-hover: 0 10px 25px rgba(0,0,0,0.2);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            scroll-behavior: smooth; /* Scroll halus saat klik menu */
         }
 
         body {
@@ -30,18 +32,42 @@
             line-height: 1.6;
             color: var(--dark-color);
             background-color: #fff;
+            overflow-x: hidden; /* Mencegah scroll horizontal saat animasi masuk */
         }
 
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
 
+        /* --- ANIMATION CSS UTILITIES (BARU) --- */
+        /* Status awal elemen sebelum di-scroll (tersembunyi & agak ke bawah) */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(50px); /* Geser ke bawah 50px */
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                        transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* Status ketika elemen terlihat di layar (muncul & kembali ke posisi asal) */
+        .scroll-animate.show-animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Penundaan (Delay) untuk efek muncul berurutan */
+        .delay-1 { transition-delay: 0.2s; }
+        .delay-2 { transition-delay: 0.4s; }
+        .delay-3 { transition-delay: 0.6s; }
+
+
         /* --- HEADER & NAVIGATION --- */
         header {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.95); /* Sedikit transparan */
+            backdrop-filter: blur(10px); /* Efek blur di belakang navbar */
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 1000;
+            transition: all 0.3s;
         }
 
         .container {
@@ -66,8 +92,23 @@
         .logo span { color: var(--dark-color); }
 
         .nav-links { display: flex; gap: 20px; }
-        .nav-links a { font-weight: 500; transition: color 0.3s; }
-        .nav-links a:hover { color: var(--primary-color); }
+        .nav-links a { 
+            font-weight: 500; 
+            position: relative;
+        }
+        
+        /* Animasi garis bawah menu saat hover */
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        .nav-links a:hover::after { width: 100%; }
 
         .btn-contact {
             background: var(--primary-color);
@@ -75,26 +116,60 @@
             padding: 10px 20px;
             border-radius: 5px;
             font-weight: 600;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,123,255,0.2);
         }
 
-        .btn-contact:hover { background: var(--secondary-color); }
+        .btn-contact:hover { 
+            background: var(--secondary-color); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,123,255,0.3);
+        }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO SECTION DENGAN ANIMASI KEN BURNS --- */
         .hero {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1597852074816-d933c7d2b988?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 80vh;
+            position: relative;
+            height: 85vh;
             color: #fff;
             display: flex;
             align-items: center;
             text-align: center;
+            overflow: hidden; /* Penting agar gambar tidak keluar area */
+        }
+
+        /* Pseudo-element untuk background image agar bisa dianimasikan terpisah dari teks */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1597852074816-d933c7d2b988?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            /* Animasi Ken Burns (Zoom lambat) */
+            animation: kenburns 20s ease-out infinite alternate;
+        }
+
+        @keyframes kenburns {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+
+        .hero-content { 
+            z-index: 1; 
+            /* Animasi masuk awal untuk teks hero */
+            animation: slideUpFade 1s ease-out forwards;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero-content h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         .hero-content p {
@@ -103,100 +178,147 @@
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
+            opacity: 0.9;
         }
 
         .btn-cta {
             background: var(--accent-color);
             color: #fff;
-            padding: 15px 30px;
+            padding: 15px 40px;
             border-radius: 50px;
             font-size: 1.1rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: transform 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
         }
 
-        .btn-cta:hover { transform: scale(1.05); }
+        .btn-cta:hover { 
+            transform: translateY(-3px) scale(1.02); 
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5);
+        }
+        
+        .btn-cta i { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
 
         /* --- SERVICES SECTION --- */
-        .services { padding: 80px 0; background: var(--light-color); }
+        .services { padding: 100px 0; background: var(--light-color); }
         
         .section-title {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
         }
         
-        .section-title h2 { font-size: 2rem; color: var(--primary-color); }
-        .section-title p { color: var(--text-gray); margin-top: 10px; }
+        .section-title h2 { 
+            font-size: 2.5rem; 
+            color: var(--primary-color); 
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+        }
+
+        /* Garis bawah judul section */
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: var(--primary-color);
+            bottom: 0;
+            left: 25%;
+        }
+
+        .section-title p { color: var(--text-gray); margin-top: 15px; font-size: 1.1rem; }
 
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
         }
 
         .service-card {
             background: #fff;
-            padding: 30px;
-            border-radius: 10px;
+            padding: 40px 30px;
+            border-radius: 15px;
             box-shadow: var(--shadow);
             text-align: center;
-            transition: transform 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efek mantul halus */
         }
 
-        .service-card:hover { transform: translateY(-5px); }
+        .service-card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: var(--shadow-hover);
+        }
 
         .service-card i {
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: var(--primary-color);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+        
+        .service-card:hover i {
+            transform: scale(1.1) rotate(5deg);
         }
 
-        .service-card h3 { margin-bottom: 15px; }
+        .service-card h3 { margin-bottom: 15px; font-size: 1.3rem; }
         .service-card p { color: var(--text-gray); font-size: 0.95rem; }
 
         /* --- ABOUT & CONTACT GRID --- */
-        .info-section { padding: 80px 0; }
+        .info-section { padding: 100px 0; }
         
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 50px;
+            gap: 60px;
             align-items: center;
         }
 
-        .info-text h2 { margin-bottom: 20px; font-size: 2rem; }
-        .info-text p { margin-bottom: 20px; color: var(--text-gray); }
+        .info-text h2 { margin-bottom: 25px; font-size: 2.2rem; }
+        .info-text p { margin-bottom: 25px; color: var(--text-gray); font-size: 1.05rem;}
         
-        .info-list li { margin-bottom: 10px; }
-        .info-list i { color: var(--accent-color); margin-right: 10px; }
+        .info-list li { margin-bottom: 15px; display: flex; align-items: center; }
+        .info-list i { color: var(--accent-color); margin-right: 15px; font-size: 1.2rem; }
 
         .contact-box {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: #fff;
-            padding: 40px;
-            border-radius: 10px;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-hover);
         }
 
-        .contact-item { display: flex; align-items: center; margin-bottom: 20px; }
-        .contact-item i { font-size: 1.5rem; margin-right: 15px; }
+        .contact-item { display: flex; align-items: center; margin-bottom: 25px; }
+        .contact-item i { 
+            font-size: 1.5rem; 
+            margin-right: 20px; 
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 50%;
+        }
+        .contact-item span { font-size: 1.1rem; }
 
         /* --- FOOTER --- */
         footer {
             background: #222;
             color: #fff;
-            padding: 20px 0;
+            padding: 30px 0;
             text-align: center;
             font-size: 0.9rem;
         }
 
         /* --- RESPONSIVE --- */
         @media(max-width: 768px) {
-            .hero-content h1 { font-size: 2rem; }
-            .nav-links { display: none; } /* Sederhana: hide menu di mobile untuk contoh ini */
-            .info-grid { grid-template-columns: 1fr; }
+            .hero-content h1 { font-size: 2.2rem; }
+            .nav-links { display: none; } 
+            .info-grid { grid-template-columns: 1fr; gap: 40px; }
+            .service-card { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -231,27 +353,27 @@
 
     <section id="services" class="services">
         <div class="container">
-            <div class="section-title">
+            <div class="section-title scroll-animate">
                 <h2>Layanan Kami</h2>
                 <p>Apa saja yang bisa kami kerjakan untuk Anda?</p>
             </div>
             <div class="services-grid">
-                <div class="service-card">
+                <div class="service-card scroll-animate">
                     <i class="fas fa-laptop-medical"></i>
                     <h3>Servis Hardware</h3>
                     <p>Perbaikan mati total, ganti LCD, ganti keyboard, upgrade RAM/SSD, hingga masalah overheating.</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card scroll-animate delay-1">
                     <i class="fab fa-windows"></i>
                     <h3>Install Ulang OS</h3>
                     <p>Install ulang Windows 10/11, Linux, MacOS, instalasi driver lengkap dan aplikasi pendukung.</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card scroll-animate delay-2">
                     <i class="fas fa-network-wired"></i>
                     <h3>Jaringan & CCTV</h3>
                     <p>Setting Mikrotik, instalasi LAN kantor, pemasangan WiFi, dan maintenance CCTV.</p>
                 </div>
-                <div class="service-card">
+                <div class="service-card scroll-animate delay-3">
                     <i class="fas fa-shield-virus"></i>
                     <h3>Hapus Virus & Data</h3>
                     <p>Pembersihan virus/malware, recovery data yang terhapus, dan backup sistem.</p>
@@ -262,7 +384,7 @@
 
     <section id="about" class="info-section">
         <div class="container info-grid">
-            <div class="info-text">
+            <div class="info-text scroll-animate">
                 <h2>Mengapa Memilih TeknoFix?</h2>
                 <p>Kami adalah tim teknisi bersertifikasi dengan pengalaman lebih dari 5 tahun menangani berbagai masalah IT.</p>
                 <ul class="info-list">
@@ -272,7 +394,7 @@
                     <li><i class="fas fa-check-circle"></i> Harga Masuk Akal</li>
                 </ul>
             </div>
-            <div id="contact" class="contact-box">
+            <div id="contact" class="contact-box scroll-animate delay-1">
                 <h3>Hubungi Kami</h3>
                 <br>
                 <div class="contact-item">
@@ -281,7 +403,7 @@
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-phone-alt"></i>
-                    <span>+62 896-6651-19793</span>
+                    <span>+62 8966-5119-793</span>
                 </div>
                 <div class="contact-item">
                     <i class="fas fa-envelope"></i>
@@ -301,6 +423,30 @@
         </div>
     </footer>
 
+    <script>
+        // Script ini mendeteksi saat elemen masuk ke layar lalu menambahkan class 'show-animate'
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.2 // Elemen harus 20% terlihat baru animasi mulai
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show-animate');
+                    observer.unobserve(entry.target); // Stop observasi setelah animasi berjalan sekali
+                }
+            });
+        }, observerOptions);
+
+        // Pilih semua elemen yang punya class 'scroll-animate'
+        const animateElements = document.querySelectorAll('.scroll-animate');
+        animateElements.forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){
@@ -312,7 +458,5 @@
     s0.parentNode.insertBefore(s1,s0);
     })();
     </script>
-    
-
     </body>
 </html>
